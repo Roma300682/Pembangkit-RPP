@@ -14,20 +14,16 @@ import {
   AlertTriangle,
   X,
   Compass,
-  FileSpreadsheet,
-  Building2,
   Calculator,
-  ShieldCheck,
-  Award,
-  Briefcase,
-  Users,
-  FileCode,
   FileJson,
   ArrowRight,
+  PenTool,
+  Layers,
+  FileText,
 } from 'lucide-react';
 import { PRESET_MATERI, PresetMateri } from '../data/presets';
 import { UserSchoolProfile, RppDocument } from '../types/rpp';
-import { parseAndNormalizeRppJson, robustJsonParse } from '../utils/jsonUtils';
+import { parseAndNormalizeRppJson } from '../utils/jsonUtils';
 
 interface GeneratorFormProps {
   onGenerate: (payload: {
@@ -37,6 +33,24 @@ interface GeneratorFormProps {
   isLoading: boolean;
   profile: UserSchoolProfile;
   onImportDoc?: (doc: RppDocument) => void;
+}
+
+// Helper function to extract topic from raw text
+function extractTopicFromText(text: string): string {
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  for (const l of lines) {
+    const m = l.match(/^(?:materi pokok|topik pembelajaran|topik|bab|modul|bahan ajar|judul)\s*[:\-]\s*(.+)$/i);
+    if (m && m[1].trim()) {
+      return m[1].trim();
+    }
+  }
+  if (lines.length > 0) {
+    const first = lines[0].replace(/^[#\*\-=\d\.\s]+/, '').trim();
+    if (first.length > 3 && first.length <= 80 && !first.includes(':')) {
+      return first;
+    }
+  }
+  return '';
 }
 
 // Structured curriculum for SMK Jurusan Akuntansi dan Keuangan Lembaga (AKL)
@@ -113,26 +127,27 @@ export const AKL_CURRICULUM_SECTIONS = [
     description: '7 Elemen Kompetensi Kejuruan Produktif Akuntansi Lengkap',
     subjects: [
       {
-        name: 'Akuntansi Perusahaan Jasa, Dagang, dan Manufaktur',
-        fase: 'Fase F / Kelas XI SMK / Semester Ganjil',
-        alokasi: '2 Pertemuan x 4 JP (180 Menit)',
-        pedagogi: 'Problem Based Learning (PBL)',
-        topics: [
-          'Siklus Akuntansi Manual Perusahaan Dagang & Jurnal Khusus',
-          'Jurnal Penyesuaian & Neraca Lajur 10 Kolom',
-          'Aliran Biaya Manufaktur: BBB, BTKL, dan BOP Pesanan',
-        ],
-      },
-      {
         name: 'Akuntansi Keuangan (Kas, Piutang, Persediaan, Aset Tetap, Utang)',
         fase: 'Fase F / Kelas XI SMK / Semester Ganjil',
         alokasi: '2 Pertemuan x 3 JP (135 Menit)',
         pedagogi: 'Problem Based Learning (PBL)',
         topics: [
           'Rekonsiliasi Bank & Penyesuaian Saldo Kas Perusahaan',
+          'Pengelolaan Kas Kecil (Metode Imprest & Fluktuasi)',
           'Pengelolaan Kartu Piutang & Estimasi Kerugian Piutang',
-          'Metode Penilaian Persediaan Perpetual FIFO & Average',
+          'Metode Penilaian Persediaan Perpetual FIFO & Rata-rata',
           'Penyusutan Aset Tetap Metode Garis Lurus & Saldo Menurun',
+        ],
+      },
+      {
+        name: 'Akuntansi Perusahaan Jasa, Dagang, dan Manufaktur',
+        fase: 'Fase F / Kelas XI SMK / Semester Ganjil',
+        alokasi: '2 Pertemuan x 4 JP (180 Menit)',
+        pedagogi: 'Problem Based Learning (PBL)',
+        topics: [
+          'Siklus Akuntansi Perusahaan Dagang & Jurnal Khusus',
+          'Jurnal Penyesuaian & Neraca Lajur 10 Kolom',
+          'Aliran Biaya Manufaktur: BBB, BTKL, dan BOP Pesanan',
         ],
       },
       {
@@ -192,7 +207,6 @@ export const AKL_CURRICULUM_SECTIONS = [
           'Model Bisnis Jasa Pembukuan & Akuntansi untuk UMKM',
           'Penetapan Harga Pokok Penjualan (HPP) & Tarif Jasa',
           'Penyusunan Laporan Keuangan SAK EMKM Mitra Binaan',
-          'Presentasi Laporan & Pelaporan SPT Final UMKM 0,5%',
         ],
       },
     ],
@@ -200,9 +214,9 @@ export const AKL_CURRICULUM_SECTIONS = [
   {
     id: 'UMUM_XI_XII',
     title: '3. Kelompok Mata Pelajaran Umum (Fase F - Kelas XI & XII)',
-    badge: 'Penyesuaian Jam Konteks AKL',
+    badge: 'Penyesuaian Konteks SMK',
     color: 'purple',
-    description: 'Muatan literasi, etika kerja, dan komunikasi finansial yang relevan dengan jurusan akuntansi',
+    description: 'Muatan literasi, etika kerja, dan komunikasi profesional',
     subjects: [
       {
         name: 'Pendidikan Agama dan Budi Pekerti (Konteks AKL)',
@@ -212,7 +226,6 @@ export const AKL_CURRICULUM_SECTIONS = [
         topics: [
           'Etika Muamalah & Kejujuran Pengelolaan Keuangan',
           'Amanah Jabatan & Larangan Perbuatan Curang (Fraud)',
-          'Tanggung Jawab Moral Akuntan Publik',
         ],
       },
       {
@@ -223,18 +236,16 @@ export const AKL_CURRICULUM_SECTIONS = [
         topics: [
           'Keadilan Sosial & Kepatuhan Membayar Pajak',
           'Integritas Anti-Korupsi & Pencegahan Kecurangan Finansial',
-          'Kewargaan Digital dalam Tata Kelola Transaksi',
         ],
       },
       {
         name: 'Bahasa Indonesia (Kelompok Mapel Umum AKL)',
         fase: 'Fase F / Kelas XI SMK / Semester Ganjil',
         alokasi: '2 Pertemuan x 2 JP (90 Menit)',
-        pedagogi: 'Genre-Based Approach (Pendekatan Berbasis Genre)',
+        pedagogi: 'Genre-Based Approach',
         topics: [
           'Penulisan Teks Laporan Hasil Analisis Keuangan Objektif',
           'Penyusunan Surat Konfirmasi Saldo Piutang & Tagihan',
-          'Teknik Presentasi Eksekutif Kinerja Finansial',
         ],
       },
       {
@@ -245,29 +256,16 @@ export const AKL_CURRICULUM_SECTIONS = [
         topics: [
           'International Accounting Terminology & Vocabulary',
           'Professional Business Email for Invoice Inquiries',
-          'Presenting Quarterly Financial Statements in English',
         ],
       },
       {
-        name: 'Sejarah (Perkembangan Sistem Keuangan & Akuntansi)',
+        name: 'Matematika Terapan & Statistika Keuangan',
         fase: 'Fase F / Kelas XI SMK / Semester Ganjil',
         alokasi: '2 Pertemuan x 2 JP (90 Menit)',
-        pedagogi: 'Inkuiri Terbimbing (Guided Inquiry)',
+        pedagogi: 'Problem Based Learning (PBL)',
         topics: [
-          'Sejarah Sistem Moneter & Lahirnya Uang Republik Indonesia (ORI)',
-          'Perkembangan Perbankan dan Profesi Akuntan Indonesia',
-          'Transformasi Sistem Pembukuan Kolonial ke Standar SAK',
-        ],
-      },
-      {
-        name: 'PJOK (Kebugaran Fisik & Ergonomi Kerja Staf Akuntan)',
-        fase: 'Fase F / Kelas XI SMK / Semester Ganjil',
-        alokasi: '2 Pertemuan x 2 JP (90 Menit)',
-        pedagogi: 'Pembelajaran Berdiferensiasi & Kolaboratif',
-        topics: [
-          'Latihan Peregangan Otot & Ergonomi Sikap Kerja Duduk',
-          'Penguatan Otot Inti (Core) Staf Workstation Akuntansi',
-          'Pola Hidup Sehat & Manajemen Stres Periode Tutup Buku',
+          'Bunga Tunggal, Bunga Majemuk, & Anuitas Pinjaman',
+          'Penyusutan Aset dan Tabel Amortisasi',
         ],
       },
     ],
@@ -280,6 +278,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
   profile,
   onImportDoc,
 }) => {
+  const [activeMode, setActiveMode] = useState<'custom' | 'preset'>('custom');
   const [materi, setMateri] = useState<string>(PRESET_MATERI[0].materi);
   const [selectedPresetId, setSelectedPresetId] = useState<string>(PRESET_MATERI[0].id);
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
@@ -292,9 +291,9 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
   const [jsonNotice, setJsonNotice] = useState<{ type: 'info' | 'error'; text: string } | null>(null);
 
   // Core customizable settings (freely editable for ANY subject)
-  const [mataPelajaran, setMataPelajaran] = useState<string>(PRESET_MATERI[0].mapel);
-  const [faseKelas, setFaseKelas] = useState<string>('Fase F / Kelas XI SMK / Semester Ganjil');
+  const [mataPelajaran, setMataPelajaran] = useState<string>('Akuntansi Keuangan');
   const [topikPembelajaran, setTopikPembelajaran] = useState<string>('Rekonsiliasi Bank & Penyesuaian Saldo Kas Perusahaan');
+  const [faseKelas, setFaseKelas] = useState<string>('Fase F / Kelas XI SMK / Semester Ganjil');
   const [alokasiWaktu, setAlokasiWaktu] = useState<string>('2 Pertemuan x 3 JP (135 Menit)');
   const [praktikPedagogis, setPraktikPedagogis] = useState<string>('Problem Based Learning (PBL)');
   const [tahunPelajaran, setTahunPelajaran] = useState<string>(profile.tahunPelajaranDefault || '2026/2027');
@@ -304,6 +303,40 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
   const filteredPresets = filterKategori === 'ALL'
     ? PRESET_MATERI
     : PRESET_MATERI.filter((p) => p.kategori === filterKategori);
+
+  const handleClearForm = () => {
+    setMateri('');
+    setSelectedPresetId('');
+    setTopikPembelajaran('');
+    setDetectedJsonRpp(null);
+    setJsonNotice(null);
+    setFormError(null);
+  };
+
+  const handleMateriChange = (newVal: string) => {
+    setMateri(newVal);
+    if (selectedPresetId) setSelectedPresetId('');
+
+    // If user pastes or writes new material, auto-detect topic if topic was empty or was the demo default
+    const detected = extractTopicFromText(newVal);
+    if (detected && (!topikPembelajaran || topikPembelajaran === 'Rekonsiliasi Bank & Penyesuaian Saldo Kas Perusahaan')) {
+      setTopikPembelajaran(detected);
+    }
+
+    if (newVal.trim().startsWith('{')) {
+      processTextForJson(newVal, false);
+    } else if (detectedJsonRpp || jsonNotice) {
+      setDetectedJsonRpp(null);
+      setJsonNotice(null);
+    }
+  };
+
+  const handleAutoDetectTopic = () => {
+    const detected = extractTopicFromText(materi);
+    if (detected) {
+      setTopikPembelajaran(detected);
+    }
+  };
 
   const applyPreset = (preset: PresetMateri) => {
     setSelectedPresetId(preset.id);
@@ -378,9 +411,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
     reader.onload = (event) => {
       const text = (event.target?.result as string) || '';
       if (text) {
-        setMateri(text);
-        setSelectedPresetId('');
-        setFormError(null);
+        handleMateriChange(text);
         processTextForJson(text, isJson);
       }
     };
@@ -408,9 +439,9 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
           namaKepalaSekolah: profile.namaKepalaSekolah,
           nipKepalaSekolah: profile.nipKepalaSekolah,
           kota: profile.kota,
-          mataPelajaran,
+          mataPelajaran: mataPelajaran.trim() || 'Akuntansi Keuangan',
           faseKelasSemester: faseKelas,
-          topikPembelajaran,
+          topikPembelajaran: topikPembelajaran.trim(),
           alokasiWaktu,
           praktikPedagogis,
           tahunPelajaran,
@@ -431,18 +462,25 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
 
   const currentSection = AKL_CURRICULUM_SECTIONS.find((s) => s.id === activeCurriculumTab) || AKL_CURRICULUM_SECTIONS[1];
 
-  // Find topics for currently selected subject if available
-  const matchingSubjectInfo = AKL_CURRICULUM_SECTIONS
-    .flatMap((s) => s.subjects)
-    .find((s) => s.name === mataPelajaran || mataPelajaran.includes(s.name.split(':')[0]));
+  // Quick subjects recommendation chips
+  const popularSubjects = [
+    'Akuntansi Keuangan',
+    'Akuntansi Perusahaan Dagang & Manufaktur',
+    'Praktikum Akuntansi Lembaga / Pemerintah',
+    'Administrasi Perpajakan',
+    'Komputer Akuntansi (MYOB / Accurate)',
+    'Dasar AKL: Aplikasi Spreadsheet',
+    'Dasar AKL: Etika Profesi & K3LH',
+    'Matematika Bisnis',
+  ];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Hero Title */}
-      <div className="text-center max-w-2xl mx-auto mb-8">
+      <div className="text-center max-w-2xl mx-auto mb-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-semibold mb-3 border border-emerald-200 shadow-2xs">
           <GraduationCap className="w-4 h-4 text-emerald-600" />
-          <span>Kurikulum Merdeka SMK • Jurusan Akuntansi dan Keuangan Lembaga (AKL)</span>
+          <span>Kurikulum Merdeka Kemendikbudristek • Berbasis Bahan Ajar Guru</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
           Generator RPP & Modul Ajar{' '}
@@ -451,8 +489,37 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
           </span>
         </h1>
         <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
-          Disusun khusus mengacu pada struktur kurikulum resmi AKL: <strong>Dasar-dasar Keahlian AKL (Fase E)</strong>, <strong>Konsentrasi Produktif Teknisi Akuntansi Junior (Fase F)</strong>, dan <strong>Mata Pelajaran Umum</strong>.
+          Ketik atau tempel materi bahan ajar akuntansi apa saja. AI dan Engine Kurikulum Merdeka akan menyusun RPP mendalam yang <strong>100% presisi sesuai topik & data materi</strong> yang Anda masukkan.
         </p>
+      </div>
+
+      {/* Mode Switcher Tabs */}
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <button
+          type="button"
+          onClick={() => setActiveMode('custom')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-2xs ${
+            activeMode === 'custom'
+              ? 'bg-emerald-700 text-white shadow-emerald-700/20'
+              : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+          }`}
+        >
+          <PenTool className="w-4 h-4" />
+          <span>Input Materi Bebas Guru</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveMode('preset')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-2xs ${
+            activeMode === 'preset'
+              ? 'bg-emerald-700 text-white shadow-emerald-700/20'
+              : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Pilih Contoh Modul & Kurikulum AKL</span>
+        </button>
       </div>
 
       {/* Quota / Rate Limit Alert Banner if error occurred */}
@@ -487,224 +554,228 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
         </div>
       )}
 
-      {/* Preset Chips (Bahan Ajar Siap Pakai Sesuai Struktur AKL) */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider">
-            <Lightbulb className="w-4 h-4 text-amber-500" />
-            <span>Pilih Contoh Modul / Materi AKL Siap Pakai:</span>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {(
-              [
-                { id: 'ALL', label: 'Semua Materi AKL' },
-                { id: 'DASAR_X', label: '📘 Kelas X (Fase E)' },
-                { id: 'PRODUKTIF_XI_XII', label: '📊 Produktif Kejuruan (Fase F)' },
-                { id: 'UMUM_XI_XII', label: '📖 Mapel Umum AKL' },
-              ] as const
-            ).map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setFilterKategori(cat.id)}
-                className={`text-[11px] px-3 py-1 rounded-full font-bold transition-colors ${
-                  filterKategori === cat.id
-                    ? 'bg-emerald-600 text-white shadow-2xs'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-
-            {selectedPresetId && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedPresetId('');
-                  setMateri('');
-                }}
-                className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 ml-1"
-              >
-                <RotateCcw className="w-3 h-3" /> Bersihkan
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          {filteredPresets.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => applyPreset(preset)}
-              className={`text-left p-2.5 rounded-xl border text-xs transition-all ${
-                selectedPresetId === preset.id
-                  ? 'border-emerald-500 bg-emerald-50/70 text-emerald-950 font-medium shadow-2xs ring-1 ring-emerald-500'
-                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className={`font-bold truncate text-[11px] ${
-                  preset.kategori === 'DASAR_X'
-                    ? 'text-emerald-700'
-                    : preset.kategori === 'PRODUKTIF_XI_XII'
-                    ? 'text-blue-700'
-                    : 'text-purple-700'
-                }`}>
-                  {preset.kelas} • {preset.elemen}
-                </span>
-                <span className="text-[10px] text-slate-400">{preset.fase}</span>
-              </div>
-              <div className="font-semibold text-slate-900 line-clamp-1">
-                {preset.judul}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Input Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-5 sm:p-6 space-y-6">
-          {/* Section 1: Struktur Kurikulum Akuntansi */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50/70 via-slate-50 to-teal-50/40 border border-emerald-200 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-              <div>
-                <label className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Calculator className="w-4 h-4 text-emerald-600" />
-                  <span>Struktur Kurikulum Jurusan Akuntansi (AKL)</span>
-                  <span className="text-red-500">*</span>
-                </label>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Pilih tingkat kurikulum & elemen kompetensi, atau ketik mata pelajaran akuntansi sendiri.
-                </p>
-              </div>
-              <span className="text-[11px] text-emerald-800 font-bold bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300 shrink-0 self-start sm:self-auto">
-                Teknisi Akuntansi Junior
-              </span>
+      {/* Preset Mode Card */}
+      {activeMode === 'preset' && (
+        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-emerald-200 shadow-sm mb-6 animate-in fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+              <span>Pilih Modul / Bahan Ajar AKL Siap Pakai:</span>
             </div>
 
-            {/* 3 Curriculum Level Tabs */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {(
+                [
+                  { id: 'ALL', label: 'Semua Materi' },
+                  { id: 'DASAR_X', label: '📘 Kelas X (Fase E)' },
+                  { id: 'PRODUKTIF_XI_XII', label: '📊 Produktif (Fase F)' },
+                  { id: 'UMUM_XI_XII', label: '📖 Mapel Umum' },
+                ] as const
+              ).map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setFilterKategori(cat.id)}
+                  className={`text-[11px] px-3 py-1 rounded-full font-bold transition-colors ${
+                    filterKategori === cat.id
+                      ? 'bg-emerald-600 text-white shadow-2xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {filteredPresets.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => {
+                  applyPreset(preset);
+                  setActiveMode('custom');
+                }}
+                className={`text-left p-2.5 rounded-xl border text-xs transition-all ${
+                  selectedPresetId === preset.id
+                    ? 'border-emerald-500 bg-emerald-50/70 text-emerald-950 font-medium shadow-2xs ring-1 ring-emerald-500'
+                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`font-bold truncate text-[11px] ${
+                    preset.kategori === 'DASAR_X'
+                      ? 'text-emerald-700'
+                      : preset.kategori === 'PRODUKTIF_XI_XII'
+                      ? 'text-blue-700'
+                      : 'text-purple-700'
+                  }`}>
+                    {preset.kelas} • {preset.elemen}
+                  </span>
+                  <span className="text-[10px] text-slate-400">{preset.fase}</span>
+                </div>
+                <div className="font-semibold text-slate-900 line-clamp-1">
+                  {preset.judul}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Curriculum Explorer Selector */}
+          <div className="mt-4 pt-3 border-t border-slate-200">
+            <span className="text-xs font-bold text-slate-600 block mb-2">
+              Atau Telusuri Elemen Berdasarkan Kurikulum:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
               {AKL_CURRICULUM_SECTIONS.map((sec) => (
                 <button
                   key={sec.id}
                   type="button"
                   onClick={() => setActiveCurriculumTab(sec.id as any)}
-                  className={`p-2.5 rounded-xl text-left border transition-all ${
+                  className={`p-2 rounded-lg text-left text-xs font-bold border transition-colors ${
                     activeCurriculumTab === sec.id
-                      ? sec.id === 'DASAR_X'
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                        : sec.id === 'PRODUKTIF_XI_XII'
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                        : 'bg-purple-600 text-white border-purple-600 shadow-xs'
-                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-950'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-[10px] uppercase font-bold tracking-wider opacity-85">
-                      {sec.badge}
-                    </span>
-                  </div>
-                  <div className="text-xs font-bold line-clamp-1">{sec.title.split('(')[0].trim()}</div>
-                  <div className="text-[10px] opacity-80 truncate">{sec.title.split('(')[1]?.replace(')', '') || ''}</div>
+                  <div className="text-[10px] text-emerald-700 font-semibold">{sec.badge}</div>
+                  <div className="truncate">{sec.title.split('(')[0]}</div>
                 </button>
               ))}
             </div>
 
-            {/* Current Section Description & Subject Selector */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2.5">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-800 pb-2 border-b border-slate-100">
-                <span className="text-emerald-800 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Elemen Pembelajaran {currentSection.title.split('(')[0]}:</span>
-                </span>
-                <span className="text-[11px] text-slate-400 font-normal">Klik untuk memilih</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {currentSection.subjects.map((subj) => (
+                <button
+                  key={subj.name}
+                  type="button"
+                  onClick={() => {
+                    handleSelectCurriculumSubject(subj);
+                    setActiveMode('custom');
+                  }}
+                  className="p-2 rounded-lg text-left text-xs border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/40 text-slate-800 transition-colors"
+                >
+                  <div className="font-bold truncate">{subj.name}</div>
+                  <div className="text-[11px] text-slate-500">{subj.fase.split('/')[1]?.trim()} • {subj.alokasi.split('(')[0].trim()}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Input Form */}
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-5 sm:p-6 space-y-5">
+          {/* Section 1: Mata Pelajaran & Topik Pembelajaran (Visible & Direct) */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Identitas Mata Pelajaran & Topik</span>
+              </span>
+              <span className="text-[11px] text-slate-500">
+                Dapat diedit bebas atau terisi otomatis dari materi
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Mata Pelajaran Input */}
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1">
+                  Mata Pelajaran <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={mataPelajaran}
+                  onChange={(e) => {
+                    setMataPelajaran(e.target.value);
+                    if (selectedPresetId) setSelectedPresetId('');
+                  }}
+                  required
+                  placeholder="Contoh: Akuntansi Keuangan, Administrasi Perpajakan, dll"
+                  className="w-full px-3 py-2 text-xs sm:text-sm font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {currentSection.subjects.map((subj) => (
+              {/* Topik Pembelajaran Input */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-800">
+                    Topik Pembelajaran <span className="text-red-500">*</span>
+                  </label>
+                  {materi.trim() && (
+                    <button
+                      type="button"
+                      onClick={handleAutoDetectTopic}
+                      className="text-[10px] text-emerald-700 hover:underline font-semibold flex items-center gap-0.5"
+                    >
+                      <Sparkles className="w-2.5 h-2.5" /> Deteksi dari Teks
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={topikPembelajaran}
+                  onChange={(e) => {
+                    setTopikPembelajaran(e.target.value);
+                    if (selectedPresetId) setSelectedPresetId('');
+                  }}
+                  required
+                  placeholder="Contoh: Jurnal Penyesuaian, Kas Kecil, Persediaan Barang, dll"
+                  className="w-full px-3 py-2 text-xs sm:text-sm font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+              </div>
+            </div>
+
+            {/* Quick Mapel Recommendation Chips */}
+            <div>
+              <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block mb-1">
+                Pilihan Cepat Mata Pelajaran:
+              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {popularSubjects.map((sub) => (
                   <button
-                    key={subj.name}
+                    key={sub}
                     type="button"
-                    onClick={() => handleSelectCurriculumSubject(subj)}
-                    className={`p-2.5 rounded-xl text-left border text-xs transition-all ${
-                      mataPelajaran === subj.name
-                        ? 'bg-emerald-50/80 border-emerald-500 text-emerald-950 font-bold ring-1 ring-emerald-500 shadow-2xs'
-                        : 'bg-slate-50/60 hover:bg-emerald-50/30 text-slate-700 border-slate-200 hover:border-emerald-300'
+                    onClick={() => {
+                      setMataPelajaran(sub);
+                      if (selectedPresetId) setSelectedPresetId('');
+                    }}
+                    className={`text-[11px] px-2.5 py-1 rounded-md transition-all ${
+                      mataPelajaran === sub
+                        ? 'bg-emerald-600 text-white font-bold shadow-2xs'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
                     }`}
                   >
-                    <div className="font-bold mb-0.5 leading-snug">{subj.name}</div>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-2">
-                      <span>{subj.fase.split('/')[1]?.trim() || subj.fase}</span>
-                      <span>•</span>
-                      <span>{subj.alokasi.split('(')[0].trim()}</span>
-                    </div>
+                    {sub}
                   </button>
                 ))}
               </div>
             </div>
-
-            {/* Custom Mata Pelajaran Input */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  <Compass className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Mata Pelajaran Terpilih (Dapat Diedit Bebas):</span>
-                </label>
-                <span className="text-[10px] text-slate-400">Ketik jika memiliki nama mapel khusus</span>
-              </div>
-              <input
-                type="text"
-                value={mataPelajaran}
-                onChange={(e) => {
-                  setMataPelajaran(e.target.value);
-                  setSelectedPresetId('');
-                }}
-                required
-                placeholder="Contoh: Akuntansi Keuangan, Praktikum Akuntansi Lembaga, Perpajakan, Komputer Akuntansi, dll"
-                className="w-full px-3.5 py-2.5 text-sm font-semibold text-slate-900 bg-white border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-2xs"
-              />
-            </div>
-
-            {/* Quick Recommended Topics for Selected Subject */}
-            {matchingSubjectInfo && matchingSubjectInfo.topics && (
-              <div className="pt-1">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                  💡 Rekomendasi Topik Pembelajaran:
-                </span>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {matchingSubjectInfo.topics.map((top) => (
-                    <button
-                      key={top}
-                      type="button"
-                      onClick={() => setTopikPembelajaran(top)}
-                      className={`text-xs px-2.5 py-1 rounded-lg transition-all ${
-                        topikPembelajaran === top
-                          ? 'bg-emerald-700 text-white font-bold shadow-2xs'
-                          : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 hover:border-emerald-300'
-                      }`}
-                    >
-                      {top}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Section 2: Main Textarea Materi Bahan Ajar */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
               <label className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-emerald-600" />
-                <span>Materi atau Bahan Ajar Akuntansi</span>
+                <span>Materi atau Bahan Ajar</span>
                 <span className="text-red-500">*</span>
               </label>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleClearForm}
+                  className="text-xs font-semibold text-slate-600 hover:text-rose-700 flex items-center gap-1 bg-slate-100 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-colors border border-slate-200"
+                  title="Kosongkan teks materi dan topik untuk memulai dari awal"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Mulai Materi Baru</span>
+                </button>
+
                 <label className="cursor-pointer text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors border border-emerald-200">
                   <Upload className="w-3.5 h-3.5" />
                   <span>Unggah File (.txt / .json)</span>
@@ -764,38 +835,19 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
 
             <textarea
               value={materi}
-              onChange={(e) => {
-                const val = e.target.value;
-                setMateri(val);
-                if (selectedPresetId) setSelectedPresetId('');
-                if (val.trim().startsWith('{')) {
-                  processTextForJson(val, false);
-                } else if (detectedJsonRpp || jsonNotice) {
-                  setDetectedJsonRpp(null);
-                  setJsonNotice(null);
-                }
-              }}
-              rows={8}
+              onChange={(e) => handleMateriChange(e.target.value)}
+              rows={9}
               required
-              placeholder="Ketik atau tempelkan (paste) ringkasan materi bahan ajar akuntansi di sini. Bisa berupa teks catatan, Jobsheet, rangkuman bab, atau berkas JSON RPP..."
+              placeholder="Ketik atau tempelkan (paste) ringkasan materi bahan ajar di sini. Bisa berupa catatan guru, Jobsheet, studi kasus transaksi akuntansi, rangkuman bab, atau teks materi apa saja..."
               className="w-full p-4 text-sm text-slate-800 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-mono leading-relaxed"
             />
 
-            <div className="flex items-center justify-between mt-1 text-xs text-slate-400">
-              <span>{materi.length} karakter • Semakin lengkap bahan ajar, semakin presisi RPP yang dihasilkan</span>
-              {materi.trim().startsWith('{') && !detectedJsonRpp && (
-                <button
-                  type="button"
-                  onClick={() => processTextForJson(materi, true)}
-                  className="text-xs text-emerald-700 hover:underline font-semibold flex items-center gap-1"
-                >
-                  <FileJson className="w-3.5 h-3.5" />
-                  Periksa Struktur JSON
-                </button>
-              )}
-              {materi.length > 50 && !materi.trim().startsWith('{') && (
-                <span className="text-emerald-600 font-medium flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Materi akuntansi siap diproses
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mt-1.5 text-xs text-slate-400">
+              <span>{materi.length} karakter • Bahan ajar ini akan menjadi rujukan mutlak penyusunan CP, TP, LKPD, & Glosarium</span>
+              {topikPembelajaran && (
+                <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Target Topik: <strong>{topikPembelajaran}</strong></span>
                 </span>
               )}
             </div>
@@ -811,10 +863,10 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
               <div className="flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-emerald-600" />
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Penyesuaian Tambahan (Opsional)
+                  Pengaturan Tambahan (Opsional)
                 </span>
                 <span className="text-[11px] text-slate-500 hidden sm:inline">
-                  — Topik Spesifik, Alokasi Waktu, Model Pembelajaran & Tahun Pelajaran
+                  — Fase / Kelas, Alokasi Waktu, Model Pembelajaran & Tahun Pelajaran
                 </span>
               </div>
               <div className="text-slate-400">
@@ -827,19 +879,6 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Topik Pembelajaran Spesifik
-                    </label>
-                    <input
-                      type="text"
-                      value={topikPembelajaran}
-                      onChange={(e) => setTopikPembelajaran(e.target.value)}
-                      placeholder="Judul topik spesifik materi"
-                      className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Fase / Kelas / Semester
                     </label>
                     <input
@@ -850,9 +889,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
                       className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Alokasi Waktu
@@ -865,7 +902,9 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
                       className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Praktik Pedagogis / Model Pembelajaran
@@ -909,8 +948,8 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
           <div className="text-xs text-slate-500 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             <span>
-              Sekolah: <strong>{profile.namaSekolah || 'SMK Negeri 1 Indonesia (AKL)'}</strong> • Guru:{' '}
-              <strong>{profile.namaGuru || 'Guru Akuntansi'}</strong>
+              Mapel: <strong>{mataPelajaran || 'Akuntansi'}</strong> • Topik:{' '}
+              <strong>{topikPembelajaran || 'Sesuai Bahan Ajar'}</strong>
             </span>
           </div>
 
@@ -924,7 +963,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
             }`}
           >
             <Sparkles className="w-4 h-4 animate-spin-slow" />
-            <span>{isLoading ? 'Sedang Menyusun RPP Akuntansi...' : '✨ Susun RPP Akuntansi Mendalam (AI)'}</span>
+            <span>{isLoading ? 'Sedang Menyusun RPP...' : '✨ Susun RPP Sesuai Bahan Ajar (AI)'}</span>
           </button>
         </div>
       </form>
@@ -938,10 +977,10 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-slate-800 text-sm">
-                Menyusun RPP Akuntansi Mendalam (Kurikulum Merdeka AKL)...
+                Menyusun RPP Mendalam Berdasarkan Bahan Ajar...
               </h3>
               <p className="text-xs text-slate-500">
-                AI sedang merancang pembelajaran untuk mata pelajaran <strong>{mataPelajaran}</strong> berstandar Teknisi Akuntansi Junior.
+                AI sedang menelaah materi bahan ajar untuk topik <strong>{topikPembelajaran || mataPelajaran}</strong>.
               </p>
             </div>
           </div>
@@ -949,7 +988,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
           <div className="space-y-2 text-xs">
             <div className="flex items-center gap-2 text-slate-700">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="font-medium">Menganalisis konsep esensial, SOP SAK/UU HPP, & jenis pengetahuan akuntansi</span>
+              <span className="font-medium">Menganalisis konsep esensial, istilah teknis, dan studi kasus dari bahan ajar</span>
             </div>
             <div
               className={`flex items-center gap-2 transition-opacity duration-300 ${
@@ -973,7 +1012,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
               ) : (
                 <Clock className="w-4 h-4 text-slate-400 shrink-0" />
               )}
-              <span>Merancang alur belajar berkesadaran: Memahami, Mengaplikasi (Jobsheet/Studi Kasus), Merefleksi</span>
+              <span>Menyusun alur belajar berkesadaran: Memahami, Mengaplikasi (LKPD konkret), Merefleksi</span>
             </div>
             <div
               className={`flex items-center gap-2 transition-opacity duration-300 ${
@@ -985,7 +1024,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({
               ) : (
                 <Clock className="w-4 h-4 text-slate-400 shrink-0" />
               )}
-              <span>Menyusun Jobsheet praktik industri, rubrik 4 kategori, dan rencana diferensiasi</span>
+              <span>Menyiapkan Lembar Kerja Peserta Didik (LKPD), rubrik penilaian, dan glosarium istilah</span>
             </div>
           </div>
         </div>

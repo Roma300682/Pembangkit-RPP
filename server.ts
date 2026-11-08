@@ -91,59 +91,210 @@ app.post('/api/generate-rpp', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Materi atau bahan ajar wajib diisi.' });
     }
 
+    const requestedMapel = settings?.mataPelajaran && settings.mataPelajaran !== 'Auto-detect dari materi'
+      ? settings.mataPelajaran
+      : '';
+    const requestedTopik = settings?.topikPembelajaran && settings.topikPembelajaran !== 'Auto-detect dari materi'
+      ? settings.topikPembelajaran
+      : '';
+    const requestedFase = settings?.faseKelasSemester || 'Fase E / Kelas X';
+
+    // Validate if the requested topic conflicts with user's inputted material (e.g. leftover demo preset)
+    const isMateriRekonsiliasi = materi.toLowerCase().includes('rekonsiliasi');
+    const cleanTopic = (requestedTopik === 'Rekonsiliasi Bank & Penyesuaian Saldo Kas Perusahaan' && !isMateriRekonsiliasi)
+      ? ''
+      : requestedTopik;
+
     const promptText = `
-Anda adalah konsultan ahli Kurikulum Merdeka Kemendikbudristek RI dan perancang Pembelajaran Mendalam (Deep Learning) spesialis Jurusan Akuntansi dan Keuangan Lembaga (AKL) SMK untuk mencetak Teknisi Akuntansi Junior yang berkesadaran, bermakna, dan menggembirakan.
+Anda adalah konsultan ahli Kurikulum Merdeka Kemendikbudristek RI dan perancang Pembelajaran Mendalam (Deep Learning: Berkesadaran, Bermakna, Menggembirakan) untuk SELURUH JENJANG PENDIDIKAN dan MATA PELAJARAN (termasuk SMK Jurusan Akuntansi & Keuangan Lembaga, Kejuruan lainnya, maupun SMA/Umum).
 
-Anda menguasai secara mendalam Struktur Kurikulum Akuntansi SMK:
-1. Kelas X (Fase E) - Dasar-dasar Program Keahlian Akuntansi dan Keuangan Lembaga:
-   - Fokus: Etika profesi akuntan, K3LH & budaya kerja 5R di kantor, dasar perbankan dan lembaga keuangan, proses bisnis akuntansi, dan aplikasi spreadsheet pengolah angka finansial.
-2. Struktur Kurikulum Kelas XI dan XII (Fase F) - Konsentrasi Keahlian Akuntansi (Mencetak Teknisi Akuntansi Junior):
-   A. Kelompok Mata Pelajaran Umum (Penyesuaian jam): Agama & Budi Pekerti, Pendidikan Pancasila, Bahasa Indonesia, Sejarah, PJOK, Bahasa Inggris.
-   B. Kelompok Mata Pelajaran Kejuruan (Elemen Kompetensi Akuntansi):
-      1. Akuntansi Perusahaan Jasa, Dagang, dan Manufaktur: Siklus akuntansi manual lengkap dari penjurnalan hingga laporan keuangan untuk berbagai bentuk perusahaan.
-      2. Akuntansi Keuangan: Pengelolaan kas, rekonsiliasi bank, kartu piutang, persediaan FIFO/Average, aset tetap, hingga kewajiban.
-      3. Akuntansi Lembaga/Instansi Pemerintah: Penerapan akuntansi sektor publik, APBDes, BKU, SP2D, dan laporan keuangan desa/daerah.
-      4. Komputer Akuntansi: Mengoperasikan aplikasi akuntansi digital (MYOB, Accurate, atau spreadsheet akuntansi).
-      5. Perpajakan: Administrasi pajak, perhitungan PPh Pasal 21 skema TER UU HPP, PPN 11%, dan tata cara pengisian SPT.
-      6. Mata Pelajaran Pilihan: Perbankan Syariah, Digital Marketing, atau Lembaga Keuangan Mikro.
-      7. Projek Kreatif dan Kewirausahaan (PKK): Jasa pembukuan dan akuntansi untuk UMKM serta menumbuhkan jiwa entrepreneur.
-
-Susunlah Rencana Pembelajaran Mendalam (RPP / Modul Ajar) LENGKAP, SIAP CETAK, dan BERMUTU TINGGI berdasarkan MATERI / BAHAN AJAR berikut:
-
---- MATERI / BAHAN AJAR INPUT DARI GURU ---
+--- MATERI / BAHAN AJAR DARI GURU (SUMBER RUJUKAN UTAMA) ---
 ${materi.trim()}
--------------------------------------------
+------------------------------------------------------------
 
-Informasi Tambahan / Preferensi Guru (Gunakan jika relevan, atau lengkapi secara profesional jika kosong):
-- Nama Satuan Pendidikan: ${settings?.namaSekolah || 'SMK Negeri 1 Indonesia (Program Keahlian AKL)'}
-- Nama Guru: ${settings?.namaGuru || 'Guru Produktif Akuntansi, S.Pd., Gr.'}
-- NIP Guru: ${settings?.nipGuru || '19850101 201001 1 001'}
-- Nama Kepala Sekolah: ${settings?.namaKepalaSekolah || 'Kepala Sekolah, M.Pd.'}
-- NIP Kepala Sekolah: ${settings?.nipKepalaSekolah || '19750505 200003 1 002'}
-- Mata Pelajaran / Konsentrasi Keahlian: ${settings?.mataPelajaran || 'Akuntansi Keuangan (AKL)'}
-- Fase / Kelas / Semester: ${settings?.faseKelasSemester || 'Fase F / Kelas XI SMK / Semester Ganjil'}
-- Topik Pembelajaran: ${settings?.topikPembelajaran || 'Auto-detect dari materi'}
+INSTRUKSI & PREFERENSI GURU:
+- Mata Pelajaran: ${requestedMapel || 'Tentukan dari materi bahan ajar di atas'}
+- Topik Pembelajaran: ${cleanTopic || 'Ekstrak dan tentukan topik spesifik dari materi bahan ajar di atas'}
+- Fase / Kelas / Semester: ${requestedFase}
+- Satuan Pendidikan: ${settings?.namaSekolah || 'Satuan Pendidikan'}
+- Nama Guru: ${settings?.namaGuru || 'Guru Pengampu'}
+- NIP Guru: ${settings?.nipGuru || '-'}
+- Model Pembelajaran / Pedagogis: ${settings?.praktikPedagogis || 'Problem Based Learning (PBL)'}
 - Alokasi Waktu: ${settings?.alokasiWaktu || '2 Pertemuan x 3 JP (135 Menit)'}
 - Tahun Pelajaran: ${settings?.tahunPelajaran || '2026/2027'}
-- Praktik Pedagogis Utama: ${settings?.praktikPedagogis || 'Problem Based Learning (PBL) Berorientasi DUDIKA'}
-- Kota/Kabupaten Pengesahan: ${settings?.kota || 'Surabaya'}
+- Kota: ${settings?.kota || 'Indonesia'}
 
-PEDOMAN PENYUSUNAN PEDAGOGIS:
-- Terapkan pendekatan Teaching Factory (TeFa), Project Based Learning (PjBL) atau Problem Based Learning (PBL) berorientasi DUDIKA (KAP, Bank, Kantor Pajak, Instansi Pemerintah, UMKM).
-- Integrasikan etika profesi, Standar Akuntansi Keuangan (SAK), regulasi perpajakan terkini (UU HPP & PMK), budaya kerja 5R, dan SOP ketelitian angka.
-- Format LKPD disajikan sebagai Jobsheet Praktik Teknisi Akuntansi Junior yang nyata dengan studi kasus dokumen transaksi bisnis.
+PEDOMAN MUTLAK KESESUAIAN MATERI:
+1. SUMBER UTAMA ADALAH MATERI DI ATAS: Seluruh isi RPP (Capaian Pembelajaran, Tujuan Pembelajaran, Aktivitas Belajar Inti, Asesmen, LKPD, Soal-soal, dan Glosarium) WAJIB 100% SESUAI DAN MEREFLEKSIKAN MATERI DI ATAS.
+2. INTEGRASI DETAIL NYATA: Ekstrak konsep, nama akun, transaksi angka riil, jurnal debet/kredit, rumus kalkulasi, SOP, dan studi kasus yang ada di bahan ajar ke dalam kegiatan pembelajaran dan LKPD. JANGAN membuat RPP generik atau sekadar template kosong!
+3. Jika materi yang diinput guru adalah tentang Akuntansi (misalnya Jurnal Penyesuaian, Kas Kecil, Perpajakan, Persediaan, Kas Bank, Siklus Akuntansi, dll), buatlah RPP akuntansi yang sangat presisi, lengkap dengan studi kasus data angka dan penjurnalan standar SAK.
 
-Format yang dihasilkan WAJIB mengikuti struktur standar 6 komponen:
-1. Identitas (Nama satuan pendidikan, Nama guru, Mata pelajaran/Konsentrasi Keahlian, Fase/kelas/semester, Topik pembelajaran, Alokasi waktu, Tahun pelajaran)
-2. Identifikasi (Kesiapan belajar murid [sudah paham, sedang berkembang, perlu bantuan], Minat & gaya belajar [visual, auditori, kinestetik], Latar belakang & kebutuhan khusus, Jenis pengetahuan materi [faktual, konseptual, prosedural, metakognitif], Relevansi materi dengan kehidupan nyata / dunia kerja di Indonesia, Dimensi Profil Lulusan yang ditargetkan dengan centang boolean dan penjelasan operasional)
-3. Desain Pembelajaran (Capaian Pembelajaran/CP resmi elemen terkait, Lintas disiplin ilmu, Tujuan Pembelajaran kompetensi+konten, Topik pembelajaran kontekstual, Praktik pedagogis, Kemitraan pembelajaran, Lingkungan pembelajaran, Pemanfaatan digital)
-4. Pengalaman Belajar (Rincian per pertemuan lengkap dengan alokasi waktu menit. Tahap awal: salam/doa/presensi, apersepsi & pertanyaan pemantik yang merangsang rasa ingin tahu, penyampaian tujuan dan ice breaking yang seru dan edukatif. Tahap inti: Memahami, Mengaplikasi [praktik/proyek], Merefleksi. Tahap penutup: kesimpulan & refleksi, umpan balik/info pertemuan berikutnya/doa)
-5. Asesmen Pembelajaran (Asesmen awal diagnostik, Asesmen proses formatif, Asesmen akhir sumatif / unjuk kerja, serta Rubrik Penilaian 4 Kategori: Sangat Baik [4], Baik [3], Cukup [2], Perlu Bimbingan [1] untuk indikator TP dan Dimensi Profil Lulusan)
-6. Lampiran (Lembar Kerja Peserta Didik / Jobsheet riil berisi langkah aktivitas/praktik dan soal-soal relevan; Bahan bacaan ringkas guru & murid serta glosarium istilah teknis; Instrumen refleksi murid & guru; Rencana pembelajaran diferensiasi konten, proses, produk; Pengesahan resmi)
+HASILKAN RESPON DALAM STRUKTUR JSON VALID DENGAN SKEMA PERSIS SEBAGAI BERIKUT:
+{
+  "identitas": {
+    "namaSatuanPendidikan": "...",
+    "namaGuru": "...",
+    "nipGuru": "...",
+    "mataPelajaran": "...",
+    "faseKelasSemester": "...",
+    "topikPembelajaran": "...",
+    "alokasiWaktu": "...",
+    "tahunPelajaran": "..."
+  },
+  "identifikasi": {
+    "kesiapanBelajar": {
+      "sudahPaham": "deskripsi detail kesiapan materi spesifik ini",
+      "sedangBerkembang": "deskripsi detail",
+      "perluBantuan": "deskripsi scaffolding detail"
+    },
+    "minatGayaBelajar": "Visual (diagram alur & jobsheet), Auditori (diskusi), Kinestetik/Praktik (simulasi meja kerja/spreadsheet)",
+    "latarBelakangKebutuhanKhusus": "kebutuhan khusus / persiapan PKL & UKK industri",
+    "jenisPengetahuanMateri": "Konseptual, Prosedural, Metakognitif terkait materi ini",
+    "relevansiKehidupanNyata": "relevansi di dunia industri / entitas bisnis nyata",
+    "dimensiProfilLulusan": [
+      { "name": "Keimanan dan ketakwaan kepada Tuhan YME", "selected": true, "keterangan": "integritas & kejujuran akuntansi" },
+      { "name": "Penalaran kritis", "selected": true, "keterangan": "analisis transaksi & verifikasi data" },
+      { "name": "Kolaborasi", "selected": true, "keterangan": "kerja sama tim dalam penyelesaian jobsheet" },
+      { "name": "Kemandirian", "selected": true, "keterangan": "ketelitian dan disiplin waktu" },
+      { "name": "Komunikasi", "selected": true, "keterangan": "presentasi hasil analisis" }
+    ]
+  },
+  "desainPembelajaran": {
+    "capaianPembelajaran": "CP resmi terkait materi dan fase ini",
+    "lintasDisiplinIlmu": "keterkaitan dengan disiplin ilmu lain (Spreadsheet, Matematika Bisnis, dll)",
+    "tujuanPembelajaran": [
+      "Pertemuan 1: Murid mampu menganalisis...",
+      "Pertemuan 2: Murid mampu menerapkan prosedur..."
+    ],
+    "topikPembelajaranKontekstual": "studi kasus nyata terkait materi",
+    "praktikPedagogis": "model pembelajaran yang dipilih",
+    "kemitraanPembelajaran": "kemitraan DUDIKA / industri mitra",
+    "lingkunganPembelajaran": "Lab / Ruang Kelas Kolaboratif",
+    "pemanfaatanDigital": "software / spreadsheet / aplikasi pendukung"
+  },
+  "pengalamanBelajar": [
+    {
+      "pertemuanKe": 1,
+      "durasiJP": "3 JP (135 Menit)",
+      "fokusTopik": "fokus pertemuan 1",
+      "awalSalamDoaPresensi": { "kegiatan": "...", "waktuMenit": 10 },
+      "awalApersepsiPertanyaanPemantik": {
+        "kegiatan": "...",
+        "waktuMenit": 15,
+        "pertanyaanPemantik": ["pertanyaan 1?", "pertanyaan 2?"]
+      },
+      "awalPenyampaianTujuanIceBreaking": {
+        "kegiatan": "...",
+        "waktuMenit": 10,
+        "iceBreaking": "ice breaking edukatif"
+      },
+      "intiMemahami": { "kegiatan": "eksplorasi konsep spesifik materi input", "waktuMenit": 35 },
+      "intiMengaplikasi": { "kegiatan": "penyelesaian LKPD studi kasus transaksi spesifik materi input", "waktuMenit": 45 },
+      "intiMerefleksi": { "kegiatan": "presentasi kelompok dan telaah kritis", "waktuMenit": 15 },
+      "penutupKesimpulanRefleksi": { "kegiatan": "...", "waktuMenit": 5 },
+      "penutupUmpanBalikInfoDoa": { "kegiatan": "...", "waktuMenit": 5 }
+    },
+    {
+      "pertemuanKe": 2,
+      "durasiJP": "3 JP (135 Menit)",
+      "fokusTopik": "fokus pertemuan 2",
+      "awalSalamDoaPresensi": { "kegiatan": "...", "waktuMenit": 10 },
+      "awalApersepsiPertanyaanPemantik": {
+        "kegiatan": "...",
+        "waktuMenit": 10,
+        "pertanyaanPemantik": ["pertanyaan 1?", "pertanyaan 2?"]
+      },
+      "awalPenyampaianTujuanIceBreaking": {
+        "kegiatan": "...",
+        "waktuMenit": 10,
+        "iceBreaking": "ice breaking peregangan / fokus"
+      },
+      "intiMemahami": { "kegiatan": "penelaahan format standar dan formula kerja spesifik", "waktuMenit": 35 },
+      "intiMengaplikasi": { "kegiatan": "praktik unjuk kerja mandiri jobsheet spesifik materi input", "waktuMenit": 45 },
+      "intiMerefleksi": { "kegiatan": "peer-review silang antar siswa", "waktuMenit": 15 },
+      "penutupKesimpulanRefleksi": { "kegiatan": "...", "waktuMenit": 5 },
+      "penutupUmpanBalikInfoDoa": { "kegiatan": "...", "waktuMenit": 5 }
+    }
+  ],
+  "asesmenPembelajaran": {
+    "asesmenAwal": { "jenis": "Diagnostik Kognitif", "teknikInstrumen": "Kuis singkat materi prasyarat", "waktuPelaksanaan": "Awal pertemuan 1" },
+    "asesmenProses": { "jenis": "Formatif", "teknikInstrumen": "Observasi kinerja diskusi & ketelitian analisis dokumen", "waktuPelaksanaan": "Selama kegiatan inti" },
+    "asesmenAkhir": { "jenis": "Sumatif Unjuk Kerja", "teknikInstrumen": "Rubrik penilaian jobsheet laporan akhir", "waktuPelaksanaan": "Akhir pertemuan 2" },
+    "rubrikPenilaian": [
+      {
+        "kriteria": "Penguasaan Konsep & Identifikasi Dokumen Terkait Materi",
+        "sangatBaik4": "...",
+        "baik3": "...",
+        "cukup2": "...",
+        "perluBimbingan1": "..."
+      },
+      {
+        "kriteria": "Ketelitian Kalkulasi & Format Kertas Kerja",
+        "sangatBaik4": "...",
+        "baik3": "...",
+        "cukup2": "...",
+        "perluBimbingan1": "..."
+      },
+      {
+        "kriteria": "Keterampilan Pemecahan Masalah (Problem Solving)",
+        "sangatBaik4": "...",
+        "baik3": "...",
+        "cukup2": "...",
+        "perluBimbingan1": "..."
+      },
+      {
+        "kriteria": "Sikap Profesionalisme (Integritas & Budaya Kerja 5R)",
+        "sangatBaik4": "...",
+        "baik3": "...",
+        "cukup2": "...",
+        "perluBimbingan1": "..."
+      }
+    ]
+  },
+  "lampiran": {
+    "lkpd": {
+      "judul": "Lembar Kerja Peserta Didik (LKPD): Praktik Studi Kasus ...",
+      "tujuan": "tujuan spesifik LKPD materi ini",
+      "petunjukPengerjaan": ["petunjuk 1", "petunjuk 2", "petunjuk 3"],
+      "stimulusRingkas": "deskripsi kasus atau data transaksi angka riil yang bersumber dari materi",
+      "langkahAktivitas": ["Langkah 1...", "Langkah 2...", "Langkah 3..."],
+      "soalDanTugas": [
+        "Soal 1 spesifik materi...",
+        "Soal 2 spesifik hitungan/analisis...",
+        "Soal 3 rekomendasi profesional..."
+      ]
+    },
+    "bahanBacaan": {
+      "ringkasanMateri": "ringkasan komprehensif materi bahan ajar dari guru",
+      "glosarium": [
+        { "istilah": "Istilah 1 dari materi", "arti": "Definisi istilah 1" },
+        { "istilah": "Istilah 2 dari materi", "arti": "Definisi istilah 2" },
+        { "istilah": "Istilah 3 dari materi", "arti": "Definisi istilah 3" },
+        { "istilah": "Istilah 4 dari materi", "arti": "Definisi istilah 4" }
+      ],
+      "mediaAjar": "Jobsheet, Modul Ajar Digital, Spreadsheet, LCD Proyektor"
+    },
+    "instrumenRefleksi": {
+      "refleksiMurid": ["pertanyaan refleksi murid 1", "pertanyaan 2", "pertanyaan 3"],
+      "refleksiGuru": ["pertanyaan refleksi guru 1", "pertanyaan 2", "pertanyaan 3"]
+    },
+    "rencanaDiferensiasi": {
+      "konten": "diferensiasi materi visual/teks/jobsheet",
+      "proses": "scaffolding bertahap vs studi kasus pengayaan",
+      "produk": "kertas kerja manual vs digital spreadsheet"
+    },
+    "pengesahan": {
+      "tempatTanggal": "${settings?.kota || 'Indonesia'}, ...",
+      "kepalaSekolahNama": "${settings?.namaKepalaSekolah || 'Kepala Sekolah'}",
+      "kepalaSekolahNIP": "${settings?.nipKepalaSekolah || '-'}",
+      "guruNama": "${settings?.namaGuru || 'Guru Pengampu'}",
+      "guruNIP": "${settings?.nipGuru || '-'}"
+    }
+  }
+}
+HANYA RESPON DENGAN JSON MURNI TANPA PEMBUKA/PENUTUP MARKDOWN.`;
 
-HASILKAN DALAM FORMAT JSON MURNI yang valid dan terstruktur tanpa pembuka/penutup basa-basi.`;
-
-    const systemInstruction = `Anda adalah asisten kecerdasan buatan spesialis penyusunan RPP dan Modul Ajar Kurikulum Merdeka Kemendikbudristek RI untuk seluruh mata pelajaran. Anda selalu merespons dengan JSON yang valid, terstruktur rapi, mendalam, dan kaya konten pendidikan berkualitas tinggi dalam Bahasa Indonesia.`;
+    const systemInstruction = `Anda adalah asisten AI perancang RPP Kurikulum Merdeka Kemendikbudristek RI. Anda selalu menyusun RPP yang 100% akurat dan mendalam sesuai materi bahan ajar yang dimasukkan guru, dalam format JSON terstruktur rapi.`;
 
     // Multi-tier execution using clean JSON response format (fast, lightweight, highly resilient)
     const modelsToTry = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];

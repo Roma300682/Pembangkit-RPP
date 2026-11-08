@@ -123,14 +123,18 @@ export default function App() {
         updatedAt: new Date().toISOString(),
         materiAsli: payload.materi,
         identitas: {
-          namaSatuanPendidikan: payload.settings?.namaSekolah || profile.namaSekolah,
-          namaGuru: payload.settings?.namaGuru || profile.namaGuru,
-          nipGuru: payload.settings?.nipGuru || profile.nipGuru,
-          mataPelajaran: generatedData.identitas?.mataPelajaran || payload.settings?.mataPelajaran || 'Mata Pelajaran',
-          faseKelasSemester: generatedData.identitas?.faseKelasSemester || payload.settings?.faseKelasSemester || 'Fase F / Kelas XI SMK',
-          topikPembelajaran: generatedData.identitas?.topikPembelajaran || payload.settings?.topikPembelajaran || 'Topik Pembelajaran',
-          alokasiWaktu: generatedData.identitas?.alokasiWaktu || payload.settings?.alokasiWaktu || '2 Pertemuan x 3 JP (135 Menit)',
-          tahunPelajaran: generatedData.identitas?.tahunPelajaran || payload.settings?.tahunPelajaran || profile.tahunPelajaranDefault || '2026/2027',
+          namaSatuanPendidikan: payload.settings?.namaSekolah || generatedData.identitas?.namaSatuanPendidikan || profile.namaSekolah,
+          namaGuru: payload.settings?.namaGuru || generatedData.identitas?.namaGuru || profile.namaGuru,
+          nipGuru: payload.settings?.nipGuru || generatedData.identitas?.nipGuru || profile.nipGuru,
+          mataPelajaran: (payload.settings?.mataPelajaran && payload.settings.mataPelajaran !== 'Auto-detect dari materi')
+            ? payload.settings.mataPelajaran
+            : (generatedData.identitas?.mataPelajaran || 'Mata Pelajaran'),
+          faseKelasSemester: payload.settings?.faseKelasSemester || generatedData.identitas?.faseKelasSemester || 'Fase F / Kelas XI SMK',
+          topikPembelajaran: (payload.settings?.topikPembelajaran && payload.settings.topikPembelajaran !== 'Rekonsiliasi Bank & Penyesuaian Saldo Kas Perusahaan' && payload.settings.topikPembelajaran !== 'Auto-detect dari materi')
+            ? payload.settings.topikPembelajaran
+            : (generatedData.identitas?.topikPembelajaran || payload.settings?.topikPembelajaran || 'Topik Pembelajaran'),
+          alokasiWaktu: payload.settings?.alokasiWaktu || generatedData.identitas?.alokasiWaktu || '2 Pertemuan x 3 JP (135 Menit)',
+          tahunPelajaran: payload.settings?.tahunPelajaran || generatedData.identitas?.tahunPelajaran || profile.tahunPelajaranDefault || '2026/2027',
         },
         identifikasi: generatedData.identifikasi || {
           kesiapanBelajar: { sudahPaham: '', sedangBerkembang: '', perluBantuan: '' },
