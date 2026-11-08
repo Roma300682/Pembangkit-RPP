@@ -1,0 +1,8 @@
+{
+  "name": "Remix RPP Pintar - Generator RPP Kurikulum Merdeka AI",
+  "description": "Generator Rencana Pembelajaran Mendalam (RPP / Modul Ajar) Kurikulum Merdeka berbasis AI khusus guru SMK \u0026 SMA di Indonesia dengan input materi bahan ajar.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

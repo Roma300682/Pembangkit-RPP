@@ -1,0 +1,69 @@
+Format Isian Rencana Pembelajaran Mendalam (Kurikulum Merdeka)
+Nov 6, 2026 · @Tsabat
+Isi kolom kanan pada setiap tabel, lalu hapus petunjuk dalam tanda kurung. Format ini mengikuti pendekatan Pembelajaran Mendalam yang berkesadaran, bermakna, dan menggembirakan; sesuaikan dengan format resmi sekolah atau dinas pendidikan Anda.
+1. Identitas
+Komponen	Isian
+Nama satuan pendidikan	(isi nama sekolah)
+Nama guru	(isi nama lengkap)
+Mata pelajaran	(isi mata pelajaran)
+Fase / kelas / semester	(contoh: Fase D / VIII / Ganjil)
+Topik pembelajaran	(isi topik atau tema)
+Alokasi waktu	(jumlah pertemuan x JP per pertemuan)
+Tahun pelajaran	(contoh: 2026/2027)
+2. Identifikasi
+Aspek	Isian
+Kesiapan belajar murid	(hasil asesmen diagnostik: sudah paham, sedang berkembang, perlu bantuan)
+Minat dan gaya belajar	(visual, auditori, kinestetik; minat terhadap topik)
+Latar belakang dan kebutuhan khusus	(budaya, sosial-ekonomi, kebutuhan khusus bila ada)
+Jenis pengetahuan materi	(faktual, konseptual, prosedural, metakognitif)
+Relevansi materi dengan kehidupan nyata	(contoh penerapan di lingkungan murid)
+Dimensi Profil Lulusan yang ditargetkan (centang yang relevan):
+•	☐ Keimanan dan ketakwaan kepada Tuhan YME
+•	☐ Kewargaan
+•	☐ Penalaran kritis
+•	☐ Kreativitas
+•	☐ Kolaborasi
+•	☐ Kemandirian
+•	☐ Kesehatan
+•	☐ Komunikasi
+3. Desain Pembelajaran
+Komponen	Isian
+Capaian Pembelajaran (CP)	(salin CP sesuai fase dan elemen mata pelajaran)
+Lintas disiplin ilmu	(mata pelajaran lain yang dikaitkan, bila ada)
+Tujuan pembelajaran	(kompetensi + konten; rinci per pertemuan bila perlu)
+Topik pembelajaran kontekstual	(topik yang dekat dengan kehidupan murid)
+Praktik pedagogis	(contoh: PjBL, PBL, inkuiri, discovery learning, diskusi kolaboratif)
+Kemitraan pembelajaran	(orang tua, masyarakat, dunia usaha, pakar, komunitas)
+Lingkungan pembelajaran	(ruang fisik, ruang virtual, budaya belajar yang dibangun)
+Pemanfaatan digital	(platform, media, dan alat bantu yang dipakai)
+4. Pengalaman Belajar
+Salin tabel di bawah untuk setiap pertemuan. Rancang kegiatan agar berkesadaran (murid sadar tujuan dan proses belajarnya), bermakna (terkait kehidupan nyata), dan menggembirakan (suasana positif dan menantang).
+Pertemuan ke-... (tanggal: ..., durasi: ... JP)
+Tahap	Kegiatan pembelajaran	Waktu
+Awal: salam, doa, presensi	(isi kegiatan)	(menit)
+Awal: apersepsi dan pertanyaan pemantik	(tulis pertanyaan pemantik)	(menit)
+Awal: penyampaian tujuan dan ice breaking	(isi kegiatan)	(menit)
+Inti: memahami	(murid membangun pemahaman lewat pengamatan, diskusi, atau bacaan)	(menit)
+Inti: mengaplikasi	(murid menerapkan konsep lewat proyek, simulasi, studi kasus, atau pemecahan masalah)	(menit)
+Inti: merefleksi	(murid menilai proses dan hasil belajar serta merencanakan tindak lanjut)	(menit)
+Penutup: kesimpulan dan refleksi	(apa yang dipelajari, apa yang sulit, langkah berikutnya)	(menit)
+Penutup: umpan balik, info pertemuan berikutnya, doa	(isi kegiatan)	(menit)
+5. Asesmen Pembelajaran
+Jenis asesmen	Teknik dan instrumen	Waktu pelaksanaan
+Asesmen awal (diagnostik)	(kognitif dan nonkognitif; contoh: kuis singkat, angket minat)	(isi)
+Asesmen proses (formatif)	(observasi, jurnal refleksi, umpan balik, rubrik)	(isi)
+Asesmen akhir (sumatif)	(produk, kinerja, portofolio, atau tes)	(isi)
+Rubrik penilaian
+Kriteria / indikator	Sangat baik (4)	Baik (3)	Cukup (2)	Perlu bimbingan (1)
+(indikator pencapaian tujuan pembelajaran)	(deskripsi)	(deskripsi)	(deskripsi)	(deskripsi)
+(indikator dimensi profil lulusan, mis. kolaborasi)	(deskripsi)	(deskripsi)	(deskripsi)	(deskripsi)
+(indikator dimensi profil lulusan, mis. penalaran kritis)	(deskripsi)	(deskripsi)	(deskripsi)	(deskripsi)
+6. Lampiran
+•	☐ Lembar Kerja Peserta Didik (LKPD)
+•	☐ Bahan bacaan dan media ajar
+•	☐ Rubrik asesmen dan instrumen refleksi
+•	☐ Rencana pembelajaran diferensiasi (konten, proses, produk)
+Pengesahan	Nama dan NIP	Tanda tangan
+Mengetahui, Kepala Sekolah	(isi)	
+Guru Mata Pelajaran	(isi)	
+
